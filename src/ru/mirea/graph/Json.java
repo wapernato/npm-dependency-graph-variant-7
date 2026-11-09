@@ -80,14 +80,18 @@ public final class Json {
     private char escaped() {
         if (position == text.length()) { throw error("Незавершённое экранирование"); }
         char next = text.charAt(position++);
+        if ("\"/\\".indexOf(next) >= 0) { return next; }
+        if (next == 'u') { return unicode(); }
+        return control(next);
+    }
+
+    private char control(char next) {
         return switch (next) {
-            case '"', '/', '\\' -> next;
             case 'b' -> '\b';
             case 'f' -> '\f';
             case 'n' -> '\n';
             case 'r' -> '\r';
             case 't' -> '\t';
-            case 'u' -> unicode();
             default -> throw error("Неверное экранирование");
         };
     }

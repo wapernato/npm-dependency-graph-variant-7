@@ -28,7 +28,8 @@ public final class Main {
             String[] reference = Repository.reference(options.get("--package"));
             Repository.Package root = repository.resolve(reference[0], reference[1]);
             System.out.println(root.id());
-            new java.util.TreeMap<>(root.dependencies()).forEach((name, range) -> System.out.println(name + " " + range));
+            new java.util.TreeMap<>(root.dependencies()).forEach((name, range) ->
+                    System.out.println(name + " " + range));
             return;
         }
         Graph graph = Graph.build(repository, options);
@@ -37,5 +38,6 @@ public final class Main {
             if (!graph.cut().isEmpty()) { System.err.println("Порядок только для среза по глубине"); }
         } else { System.out.print(graph.describe()); }
         if (options.flag("--ascii")) { System.out.print(graph.ascii()); }
+        if (options.get("--mode").equals("render")) { Diagram.render(graph, options); }
     }
 }

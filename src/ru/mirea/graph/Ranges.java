@@ -9,9 +9,14 @@ public final class Ranges {
 
     /** Выбрать максимальную подходящую версию. */
     public static String select(Collection<String> versions, String range) {
-        return versions.stream().filter(v -> matches(Version.parse(v), range))
+        return versions.stream().filter(Ranges::valid).filter(v -> matches(Version.parse(v), range))
                 .max(Comparator.comparing(Version::parse))
                 .orElseThrow(() -> new IllegalArgumentException("Нет версии для диапазона: " + range));
+    }
+
+    private static boolean valid(String version) {
+        try { Version.parse(version); return true; }
+        catch (IllegalArgumentException error) { return false; }
     }
 
     /** Проверить OR-объединение наборов ограничений. */
@@ -48,15 +53,28 @@ public final class Ranges {
         int parts = precision(raw);
         if (parts == 0) { return !op.equals("<") && !op.equals(">"); }
         Version low = base(raw);
+        if (java.util.Set.of(">=", ">", "<", "<=").contains(op)) {
+            return comparison(v, low, parts, op, raw);
+        }
+        return bounded(v, low, parts, op);
+    }
+
+    private static boolean comparison(Version v, Version low, int parts, String op, String raw) {
         int order = v.compareTo(low);
         return switch (op) {
             case ">=" -> order >= 0;
             case ">" -> parts == 3 ? order > 0 : v.compareTo(next(low, parts)) >= 0;
             case "<" -> order < 0;
-            case "<=" -> upper(v, raw);
-            case "~" -> order >= 0 && v.compareTo(next(low, Math.min(parts, 2))) < 0;
-            case "^" -> order >= 0 && v.compareTo(caret(low, parts)) < 0;
-            default -> order >= 0 && (parts == 3 ? order == 0 : v.compareTo(next(low, parts)) < 0);
+            default -> upper(v, raw);
+        };
+    }
+
+    private static boolean bounded(Version v, Version low, int parts, String op) {
+        if (v.compareTo(low) < 0) { return false; }
+        return switch (op) {
+            case "~" -> v.compareTo(next(low, Math.min(parts, 2))) < 0;
+            case "^" -> v.compareTo(caret(low, parts)) < 0;
+            default -> parts == 3 ? v.compareTo(low) == 0 : v.compareTo(next(low, parts)) < 0;
         };
     }
 
@@ -74,6 +92,10 @@ public final class Ranges {
 
     private static int precision(String raw) {
         String text = raw.replaceFirst("^[v=]", "");
+        String core = text.split("[-+]", 2)[0];
+        if (!core.isEmpty() && !core.matches("(0|[1-9][0-9]*|[xX*])(\\.(0|[1-9][0-9]*|[xX*])){0,2}")) {
+            throw new IllegalArgumentException("Неподдерживаемый диапазон: " + raw);
+        }
         int result = 0;
         for (String part : text.split("[.+-]")) {
             if (!part.matches("[0-9]+")) { break; }

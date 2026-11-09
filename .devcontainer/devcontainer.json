@@ -1,0 +1,5 @@
+{
+  "name": "npm graph variant 7 (Java 17)",
+  "image": "mcr.microsoft.com/devcontainers/java:17-bookworm",
+  "postCreateCommand": "sh scripts/install-d2.sh && sh scripts/test.sh"
+}

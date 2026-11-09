@@ -38,6 +38,7 @@ public record Graph(String root, Map<String, List<String>> edges, Set<String> cu
                 children.add(child.id());
                 if (depths.putIfAbsent(child.id(), depth + 1) == null) { queue.add(child); }
             }
+            edges.put(current.id(), children.stream().distinct().toList());
         }
         return new Graph(root.id(), edges, cut);
     }
@@ -57,22 +58,23 @@ public record Graph(String root, Map<String, List<String>> edges, Set<String> cu
 
     /** ASCII-дерево без рекурсии; повторные узлы отмечаются и не разворачиваются снова. */
     public String ascii() {
-        record Item(String name, String indent) { }
+        record Item(String name, int depth) { }
         ArrayDeque<Item> stack = new ArrayDeque<>();
         Set<String> shown = new LinkedHashSet<>();
         StringBuilder text = new StringBuilder();
-        stack.push(new Item(root, ""));
+        stack.push(new Item(root, 0));
         while (!stack.isEmpty()) {
             Item item = stack.pop();
             boolean fresh = shown.add(item.name());
-            text.append(item.indent()).append(item.name());
+            if (item.depth() > 0) { text.append("   ".repeat(item.depth() - 1)).append("+- "); }
+            text.append(item.name());
             if (!fresh) { text.append(" [repeat/cycle]"); }
             if (cut.contains(item.name())) { text.append(" [depth limit]"); }
             text.append('\n');
             if (!fresh) { continue; }
             List<String> children = edges.get(item.name());
             for (int i = children.size() - 1; i >= 0; i--) {
-                stack.push(new Item(children.get(i), item.indent() + "  +- "));
+                stack.push(new Item(children.get(i), item.depth() + 1));
             }
         }
         return text.toString();

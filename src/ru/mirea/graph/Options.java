@@ -46,13 +46,14 @@ public record Options(Map<String, String> values) {
             throw new IllegalArgumentException("--output должен иметь расширение .svg");
         }
         Path.of(get("--output"));
+        if (get("--repository").isBlank()) { throw new IllegalArgumentException("Пустой --repository"); }
         if (flag("--test")) { Path.of(get("--repository")); } else { validateUrl(); }
         if (get("--d2").isBlank()) { throw new IllegalArgumentException("Пустой --d2"); }
     }
 
     private void validateUrl() {
         URI uri = URI.create(get("--repository"));
-        if (!Set.of("http", "https").contains(uri.getScheme()) || uri.getHost() == null
+        if (uri.getScheme() == null || !Set.of("http", "https").contains(uri.getScheme()) || uri.getHost() == null
                 || uri.getQuery() != null || uri.getFragment() != null || uri.getUserInfo() != null) {
             throw new IllegalArgumentException("--repository: требуется URL HTTP(S) без query/fragment/пароля");
         }

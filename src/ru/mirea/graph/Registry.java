@@ -47,7 +47,8 @@ public final class Registry implements Repository {
         String encoded = URLEncoder.encode(name, StandardCharsets.UTF_8).replace("+", "%20");
         HttpRequest request = HttpRequest.newBuilder(URI.create(base + "/" + encoded))
                 .timeout(Duration.ofSeconds(30)).header("Accept", "application/vnd.npm.install-v1+json").GET().build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        HttpResponse<String> response = client.send(request,
+                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         if (response.statusCode() != 200) {
             throw new IllegalArgumentException("npm HTTP " + response.statusCode() + ": " + name);
         }
