@@ -14,16 +14,25 @@ public final class Main {
                         + "[--mode config|direct|graph|order|render] [--d2 PATH]");
             } else { execute(options); }
         } catch (Exception error) {
-            System.err.println("Ошибка: " + error.getMessage());
+            System.err.println("Ошибка: " + error.getClass().getSimpleName() + ": " + error.getMessage());
             System.exit(2);
         }
     }
 
     private static void execute(Options options) throws Exception {
         if (options.get("--mode").equals("config")) { System.out.print(options.describe()); return; }
-        String[] reference = Repository.reference(options.get("--package"));
-        Repository.Package root = new Registry(options.get("--repository")).resolve(reference[0], reference[1]);
-        System.out.println(root.id());
-        new java.util.TreeMap<>(root.dependencies()).forEach((name, range) -> System.out.println(name + " " + range));
+        Repository repository = options.flag("--test")
+                ? new TestRepository(java.nio.file.Path.of(options.get("--repository")))
+                : new Registry(options.get("--repository"));
+        if (options.get("--mode").equals("direct")) {
+            String[] reference = Repository.reference(options.get("--package"));
+            Repository.Package root = repository.resolve(reference[0], reference[1]);
+            System.out.println(root.id());
+            new java.util.TreeMap<>(root.dependencies()).forEach((name, range) -> System.out.println(name + " " + range));
+            return;
+        }
+        Graph graph = Graph.build(repository, options);
+        System.out.print(graph.describe());
+        if (options.flag("--ascii")) { System.out.print(graph.ascii()); }
     }
 }

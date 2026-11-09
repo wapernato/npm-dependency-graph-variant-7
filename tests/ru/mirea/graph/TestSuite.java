@@ -16,6 +16,7 @@ public final class TestSuite {
             rejects(() -> Options.parse(bad));
         }
         ParserChecks.run();
+        GraphChecks.run();
         System.out.println("PASS: " + count);
     }
 
