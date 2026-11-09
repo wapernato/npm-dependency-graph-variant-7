@@ -1,23 +1,22 @@
-# Этап 1. Настройки CLI — вариант 7 (работа 2)
-
-Java 17+, только стандартная библиотека. Запуск из корня проекта:
+# Этап 2. Сбор npm-данных — вариант 7
 
 ```sh
-./run.sh --package express --mode config
-./run.sh --help
+./run.sh --package is-odd@3.0.1 --mode direct
+./run.sh --package @babel/core --mode direct
 ./scripts/test.sh
 ```
 
-Параметры: `--package NAME[@VERSION]` обязателен; `--repository` — URL npm
-(по умолчанию https://registry.npmjs.org), с `--test` — путь к тестовому графу;
-`--output` — SVG (output/graph.svg); `--ascii` — дерево; `--depth` — целое >=0
-(8 по умолчанию); `--filter` — исключаемая подстрока (пустая по умолчанию).
-Дополнительно `--mode config|direct|graph|order|render` и `--d2 PATH`.
-В этом коммите выводятся все настройки как ключ=значение. Неизвестные,
-повторные опции, пропущенные значения, неверные URL, глубина, режим и
-расширение дают понятную ошибку и код 2. `--help` даёт код 0.
+Java 17+, настройка JDK через JAVA_HOME. См. [этап 1](docs/stage1/README.md)
+для всех параметров CLI. `--mode config` сохраняет вывод конфигурации.
+`--mode direct` показывает корень и прямые runtime dependencies с диапазонами.
+`Registry` получает JSON по HTTP(S), проверяет статус, ограничивает ожидание
+и кеширует метаданные на время запуска. Менеджеры пакетов и библиотеки
+получения зависимостей не используются. `Json` — собственный строгий парсер.
+`Version` и `Ranges` разрешают latest/теги, точные версии, ^, ~, wildcard,
+сравнения, AND, OR, hyphen и prerelease. Узел определяется именем и версией.
+Поддержаны npm aliases; file/git/workspace URL отклоняются с ошибкой.
+Учитывается поле dependencies; dev/peer/optional не входят в анализ.
+HTTP/JSON/версии и сетевые ошибки дают stderr и ненулевой код 2.
 
-`Options.parse/get/flag/depth/describe` разбирают и проверяют настройки.
-`Main.main` обрабатывает ошибки. Сборка — `scripts/build.sh`, тесты —
-`tests/ru/mirea/graph/TestSuite.java`, запуск — `run.sh`. Задайте `JAVA_HOME`,
-если JDK 17+ не выбран в PATH. Зависимости и менеджеры пакетов не нужны.
+Запуск и сборка не требуют npm. Тесты: CLI, JSON, сравнение версий и диапазоны.
+На этом этапе выводятся только прямые зависимости; транзитивный обход — этап 3.

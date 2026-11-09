@@ -15,6 +15,7 @@ public final class TestSuite {
                 {"--package", "A", "--repository", "ftp://host"}, {"--package", "A", "--ascii", "--ascii"}}) {
             rejects(() -> Options.parse(bad));
         }
+        ParserChecks.run();
         System.out.println("PASS: " + count);
     }
 

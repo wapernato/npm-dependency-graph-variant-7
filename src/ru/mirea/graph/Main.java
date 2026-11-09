@@ -20,6 +20,10 @@ public final class Main {
     }
 
     private static void execute(Options options) throws Exception {
-        System.out.print(options.describe());
+        if (options.get("--mode").equals("config")) { System.out.print(options.describe()); return; }
+        String[] reference = Repository.reference(options.get("--package"));
+        Repository.Package root = new Registry(options.get("--repository")).resolve(reference[0], reference[1]);
+        System.out.println(root.id());
+        new java.util.TreeMap<>(root.dependencies()).forEach((name, range) -> System.out.println(name + " " + range));
     }
 }
