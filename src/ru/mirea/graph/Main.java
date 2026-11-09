@@ -32,7 +32,10 @@ public final class Main {
             return;
         }
         Graph graph = Graph.build(repository, options);
-        System.out.print(graph.describe());
+        if (options.get("--mode").equals("order")) {
+            System.out.println(String.join(" -> ", LoadOrder.of(graph)));
+            if (!graph.cut().isEmpty()) { System.err.println("Порядок только для среза по глубине"); }
+        } else { System.out.print(graph.describe()); }
         if (options.flag("--ascii")) { System.out.print(graph.ascii()); }
     }
 }

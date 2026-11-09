@@ -17,6 +17,7 @@ public final class TestSuite {
         }
         ParserChecks.run();
         GraphChecks.run();
+        OrderChecks.run();
         System.out.println("PASS: " + count);
     }
 
